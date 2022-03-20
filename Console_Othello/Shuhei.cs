@@ -1,20 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Console_Othello
+﻿namespace Console_Othello
 {
     public class Human : IPlayer
     {
-        public ID ID { get; set; }
+        public PlayerID ID { get; set; }
         public string Name { get; } = "Human";
         public PlayerType Type { get; } = PlayerType.Human;
 
         public Human()
         {
-
         }
 
         public Human(string Name)
@@ -22,20 +15,28 @@ namespace Console_Othello
             this.Name = Name;
         }
 
-
-        public (int row, int column) PlaceStone(List<List<ID>> board)
+        public (int row, int column) Place(List<List<PlayerID>> board)
         {
             throw new NotImplementedException();
         }
     }
 
-    public class Haruki : IPlayer
+    public class Shuhei_CPU : IPlayer
     {
-        public ID ID { get; set; }
-        public string Name { get; } = "Haruki";
-        public PlayerType Type { get; } = PlayerType.Human;
+        public PlayerID ID { get; set; }
+        public string Name { get; } = "Shuhei_CPU";
+        public PlayerType Type { get; } = PlayerType.CPU;
 
-        public (int row, int column) PlaceStone(List<List<ID>> board)
+        public Shuhei_CPU()
+        {
+        }
+
+        public Shuhei_CPU(string Name)
+        {
+            this.Name = Name;
+        }
+
+        public (int row, int column) Place(List<List<PlayerID>> board)
         {
             throw new NotImplementedException();
         }

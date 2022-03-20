@@ -11,65 +11,110 @@ namespace Console_Othello
         const int ROWSIZE = 10;
         const int COLSIZE = 10;
 
+        const int LIFE_COUNT = 3;
+
+        public List<List<PlayerID>> Board { get; private set; }
+
+        public bool CheckGameFinished()
+        {
+            //置く場所がない
+            if (!Board.SelectMany(x => x).Any(x => x == PlayerID.None))
+            {
+                return true;
+            }
+
+            //ターンの最後でライフが残っている人が1人
+            if (Count % Players.Count == Players.Count - 1 && PlayerLifeList.Where(x => x.Value > 0).Count() == 1)
+            {
+                return true;
+            }
+
+
+
+            return true;
+        }
+
+
         public int Count { get; private set; } = 0;
 
         public List<IPlayer> Players = new List<IPlayer>();
 
         public IPlayer CurrentPlayer { get; set; }
 
-        public List<List<ID>> Board { get; private set; }
-
         public GameManager()
         {
         }
 
-        public List<List<ID>> InitBoard()
+        public List<List<PlayerID>> InitBoard()
         {
-            Board = new List<List<ID>>();
+            Board = new List<List<PlayerID>>();
             for (int row = 0; row < ROWSIZE; row++)
             {
-                Board.Add(new List<ID>());
+                Board.Add(new List<PlayerID>());
                 for (int col = 0; col < COLSIZE; col++)
                 {
-                    Board[row].Add(ID.None);
+                    Board[row].Add(PlayerID.None);
                 }
             }
 
-            Board[5][5] = ID.Player1;
-            Board[4][3] = ID.Player1;
-            Board[3][4] = ID.Player1;
-            Board[6][6] = ID.Player1;
+            Board[5][5] = PlayerID.Player1;
+            Board[4][3] = PlayerID.Player1;
+            Board[3][4] = PlayerID.Player1;
+            Board[6][6] = PlayerID.Player1;
 
-            Board[5][4] = ID.Player2;
-            Board[3][5] = ID.Player2;
-            Board[4][6] = ID.Player2;
-            Board[6][3] = ID.Player2;
+            Board[5][4] = PlayerID.Player2;
+            Board[3][5] = PlayerID.Player2;
+            Board[4][6] = PlayerID.Player2;
+            Board[6][3] = PlayerID.Player2;
 
-            Board[4][5] = ID.Player3;
-            Board[5][3] = ID.Player3;
-            Board[6][4] = ID.Player3;
-            Board[3][6] = ID.Player3;
+            Board[4][5] = PlayerID.Player3;
+            Board[5][3] = PlayerID.Player3;
+            Board[6][4] = PlayerID.Player3;
+            Board[3][6] = PlayerID.Player3;
 
-            Board[4][4] = ID.Player4;
-            Board[5][6] = ID.Player4;
-            Board[6][5] = ID.Player4;
-            Board[3][3] = ID.Player4;
+            Board[4][4] = PlayerID.Player4;
+            Board[5][6] = PlayerID.Player4;
+            Board[6][5] = PlayerID.Player4;
+            Board[3][3] = PlayerID.Player4;
 
             return Board;
         }
+
+        internal void DecreaseLife(PlayerID id)
+        {
+            PlayerLifeList[id]--;
+        }
+
         public void SetPlayerOrder(int startIndex)
         {
-            Players[(startIndex + 0) % 4].ID = ID.Player1;
-            Players[(startIndex + 1) % 4].ID = ID.Player2;
-            Players[(startIndex + 2) % 4].ID = ID.Player3;
-            Players[(startIndex + 3) % 4].ID = ID.Player4;
+            Players[(startIndex + 0) % 4].ID = PlayerID.Player1;
+            Players[(startIndex + 1) % 4].ID = PlayerID.Player2;
+            Players[(startIndex + 2) % 4].ID = PlayerID.Player3;
+            Players[(startIndex + 3) % 4].ID = PlayerID.Player4;
 
             CurrentPlayer = Players[0];
         }
 
+        public Dictionary<PlayerID, int> PlayerLifeList = new Dictionary<PlayerID, int>();
+        public void InitPlayerLifeList()
+        {
+            foreach (var id in Enum.GetValues(typeof(PlayerID)).Cast<PlayerID>().ToList())
+            {
+                PlayerLifeList[id] = LIFE_COUNT;
+            }
+        }
+        public int GetPlayerLife(PlayerID id)
+        {
+            return PlayerLifeList[id];
+        }
+
+
         public bool PlaceStone(int row, int col)
         {
-            CheckInput(row, col);
+            if (!CheckPlaceStone(row, col))
+            {
+                return false;
+            }
 
             //ひっくり返せる石をピックアップする
             var reverseTargetStones = CheckReverseStones(row, col);
@@ -93,15 +138,15 @@ namespace Console_Othello
             CurrentPlayer = Players[Count % Players.Count];
         }
 
-        public string GetPlayerMark(ID id)
+        public string GetPlayerMark(PlayerID id)
         {
             return id switch
             {
-                ID.None => "□",
-                ID.Player1 => "●",
-                ID.Player2 => "★",
-                ID.Player3 => "▲",
-                ID.Player4 => "■",
+                PlayerID.None => "□",
+                PlayerID.Player1 => "●",
+                PlayerID.Player2 => "★",
+                PlayerID.Player3 => "▲",
+                PlayerID.Player4 => "■",
                 _ => throw new NotImplementedException(),
             };
         }
@@ -128,7 +173,11 @@ namespace Console_Othello
         }
         List<(int row, int col)> CheckReverse(int row, int col, CheckDirection direction)
         {
-            List<(int row, int col)> rl = new List<(int row, int col)>();
+            List<(int row, int col)> result = new List<(int row, int col)>();
+
+            //1.自分の石に当たるか
+            //2.盤の外に出るか
+            //3.何も置かれていないマスに当たるか
             do
             {
                 switch (direction)
@@ -163,24 +212,25 @@ namespace Console_Othello
                         break;
                 }
 
+                //盤の外に出た場合
                 if (!(row is >= 0 and < ROWSIZE) || !(col is >= 0 and < COLSIZE))
                 {
                     break;
                 }
 
+                //自分の石に当たった場合
                 if (Board[row][col] == CurrentPlayer.ID)
                 {
-                    return rl;
+                    return result;
                 }
-                rl.Add((row, col));
-            } while (row >= 0 && Board[row][col] != ID.None);
+                result.Add((row, col));
+            } while (Board[row][col] != PlayerID.None);
 
-            //ひっくり返す石が見つからなかった
-            rl.Clear();
-            return rl;
+            result.Clear();
+            return result;
         }
 
-        bool CheckInput(int row, int col)
+        bool CheckPlaceStone(int row, int col)
         {
             if (row >= ROWSIZE)
             {
@@ -191,7 +241,7 @@ namespace Console_Othello
                 return false;
             }
 
-            if (Board[row][col] != ID.None)
+            if (Board[row][col] != PlayerID.None)
             {
                 return false;
             }
@@ -215,7 +265,7 @@ namespace Console_Othello
         TopLeft,
     }
 
-    public enum ID
+    public enum PlayerID
     {
         None,
         Player1,

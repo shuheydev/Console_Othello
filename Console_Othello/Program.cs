@@ -18,7 +18,7 @@ gameManager.Players.Add(new Human("Haru"));
 gameManager.Players.Add(new Human("Natsu"));
 
 gameManager.SetPlayerOrder(0);
-
+gameManager.InitPlayerLifeList();
 
 Console.Clear();
 Play();
@@ -28,23 +28,45 @@ void Play()
 {
     while (true)
     {
+        //if (gameManager.GetPlayerLife(gameManager.CurrentPlayer.ID) <= 0)
+        //{
+        //    gameManager.NextPlayer();
+        //    continue;
+        //}
+
         Console.SetCursorPosition(0, PLAYERNAME_LINE_NUM);
-        Console.Write($"{gameManager.CurrentPlayer.Name} : {gameManager.GetPlayerMark(gameManager.CurrentPlayer.ID)}");
+        Console.Write($"{gameManager.CurrentPlayer.Name} : {gameManager.GetPlayerMark(gameManager.CurrentPlayer.ID)} : {gameManager.GetPlayerLife(gameManager.CurrentPlayer.ID)}");
 
         Console.SetCursorPosition(0, BOARD_LINE_NUM);
         DrawBoard(gameManager.Board);
 
-        Console.Write("Input[row,column]:");
-        string input = Console.ReadLine();
+        int row;
+        int col;
 
-        //入力の形式が正しいかどうか
-        if (!CheckInput(input, out int row, out int col))
+        //石を置く場所を取得する
+        if (gameManager.CurrentPlayer.Type == PlayerType.Human)
         {
-            Console.Clear();
-            Console.SetCursorPosition(0, MESSAGE_LINE_NUM);
-            Console.Write($"入力が正しくありません: {input}");
+            Console.Write("Input[row,column]:");
+            string input = Console.ReadLine();
 
-            continue;
+            //入力の形式が正しいかどうか
+            if (!CheckUserInput(input, out row, out col))
+            {
+                Console.Clear();
+                Console.SetCursorPosition(0, MESSAGE_LINE_NUM);
+                Console.Write($"入力が正しくありません: {input}");
+
+                //置けなかったらライフが1減って次のプレイヤーへ
+                gameManager.DecreaseLife(gameManager.CurrentPlayer.ID);
+                gameManager.NextPlayer();
+
+                continue;
+            }
+        }
+        else
+        {
+            //CPUの場合
+            (row, col) = gameManager.CurrentPlayer.Place(gameManager.Board);
         }
 
 
@@ -55,16 +77,18 @@ void Play()
             Console.SetCursorPosition(0, MESSAGE_LINE_NUM);
             Console.Write($"そこには置けません: {row}, {col}");
 
+            //置けなかったらライフが1減って次のプレイヤーへ
+            gameManager.DecreaseLife(gameManager.CurrentPlayer.ID);
+            gameManager.NextPlayer();
+
             continue;
         }
-
-        gameManager.NextPlayer();
 
         Console.Clear();
     }
 }
 
-bool CheckInput(string input, out int row, out int col)
+bool CheckUserInput(string input, out int row, out int col)
 {
     row = -1;
     col = -1;
@@ -92,7 +116,7 @@ bool CheckInput(string input, out int row, out int col)
     col = intCol;
     return true;
 }
-void DrawBoard(List<List<ID>> board)
+void DrawBoard(List<List<PlayerID>> board)
 {
     Console.Write("  ");
     Console.WriteLine(String.Join(" ", Enumerable.Range(0, board.Count)));
