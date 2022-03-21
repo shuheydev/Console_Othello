@@ -22,3 +22,5 @@ gameManager.Players.Add(new Random_CPU("サトウ"));
 3. 今の所、終了条件があなだらけですが、全てのマスに石が置かれたときに一番スコアが高い人が勝ちです。
 4. プレイヤーは4人です。多くても少なくてもいけません。4人です。
 
+# 実行画面
+https://user-images.githubusercontent.com/43431002/159196918-426567a2-35dd-4bd5-a3f9-9d95c24aeba9.mp4
