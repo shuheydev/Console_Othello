@@ -93,7 +93,18 @@ namespace Console_Othello
         public bool IsFinish()
         {
             //置くところがない
-            return !Board.SelectMany(x => x).Any(x => x == PlayerID.None);
+            if (!Board.SelectMany(x => x).Any(x => x == PlayerID.None))
+            {
+                return true;
+            }
+
+            //全員のライフが0
+            if (PlayerLifeList.Max(x => x.Value) == 0)
+            {
+                return true;
+            }
+
+            return false;
         }
 
         public Dictionary<PlayerID, int> GetScore()

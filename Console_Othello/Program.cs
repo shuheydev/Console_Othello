@@ -21,6 +21,9 @@ gameManager.SetPlayerOrder(0);
 gameManager.InitPlayerLifeList();
 
 Console.Clear();
+Console.WriteLine("何かキーを押すと始まります");
+Console.ReadKey();
+
 Play();
 
 
@@ -36,7 +39,7 @@ void Play()
         var score = gameManager.GetScore();
         DisplayScore(score);
 
-        if(gameManager.IsFinish())
+        if (gameManager.IsFinish())
         {
             break;
         }

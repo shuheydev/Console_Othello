@@ -23,6 +23,10 @@ namespace Console_Othello
         }
     }
 
+
+    /// <summary>
+    /// 置けるところにランダムに置く
+    /// </summary>
     public class Random_CPU : IPlayer
     {
         public PlayerID ID { get; set; }
