@@ -12,10 +12,10 @@ var gameManager = new GameManager();
 
 gameManager.InitBoard();
 
-gameManager.Players.Add(new Human("Shuhei"));
-gameManager.Players.Add(new Human("Emi"));
-gameManager.Players.Add(new Human("Haru"));
-gameManager.Players.Add(new Human("Natsu"));
+gameManager.Players.Add(new Random_CPU("スズキ"));
+gameManager.Players.Add(new Random_CPU("タカハシ"));
+gameManager.Players.Add(new Random_CPU("ヤマダ"));
+gameManager.Players.Add(new Random_CPU("サトウ"));
 
 gameManager.SetPlayerOrder(0);
 gameManager.InitPlayerLifeList();
@@ -28,17 +28,26 @@ void Play()
 {
     while (true)
     {
-        //if (gameManager.GetPlayerLife(gameManager.CurrentPlayer.ID) <= 0)
-        //{
-        //    gameManager.NextPlayer();
-        //    continue;
-        //}
-
-        Console.SetCursorPosition(0, PLAYERNAME_LINE_NUM);
         Console.Write($"{gameManager.CurrentPlayer.Name} : {gameManager.GetPlayerMark(gameManager.CurrentPlayer.ID)} : {gameManager.GetPlayerLife(gameManager.CurrentPlayer.ID)}");
 
         Console.SetCursorPosition(0, BOARD_LINE_NUM);
         DrawBoard(gameManager.Board);
+
+        var score = gameManager.GetScore();
+        DisplayScore(score);
+
+        if(gameManager.IsFinish())
+        {
+            break;
+        }
+
+        if (gameManager.GetPlayerLife(gameManager.CurrentPlayer.ID) <= 0)
+        {
+            gameManager.NextPlayer();
+            continue;
+        }
+
+        Console.SetCursorPosition(0, PLAYERNAME_LINE_NUM);
 
         int row;
         int col;
@@ -67,6 +76,8 @@ void Play()
         {
             //CPUの場合
             (row, col) = gameManager.CurrentPlayer.Place(gameManager.Board);
+
+            Task.Delay(100).Wait();
         }
 
 
@@ -84,8 +95,39 @@ void Play()
             continue;
         }
 
+        gameManager.NextPlayer();
+
         Console.Clear();
     }
+
+    var winnerId = gameManager.GetScore().MaxBy(x => x.Value).Key;
+    var winner = gameManager.GetPlayerById(winnerId);
+    Console.SetCursorPosition(0, MESSAGE_LINE_NUM);
+    Console.WriteLine($"{winner.Name} Win!!");
+
+    Console.ReadKey();
+}
+
+void DisplayScore(Dictionary<PlayerID, int> score)
+{
+    Console.SetCursorPosition(0, 15);
+
+    int maxNameLength = gameManager.Players.Max(x => x.Name.Length);
+    foreach (var id in Enum.GetValues(typeof(PlayerID)).Cast<PlayerID>().ToList())
+    {
+        if (id == PlayerID.None)
+        {
+            continue;
+        }
+
+        Console.Write($"{gameManager.GetPlayerById(id).Name,-10} : HP {gameManager.GetPlayerLife(id)} : {score[id]}個 ");
+        for (int i = 0; i < score[id]; i++)
+        {
+            Console.Write("*");
+        }
+        Console.WriteLine();
+    }
+    Console.WriteLine($"空き : {score[PlayerID.None]}個");
 }
 
 bool CheckUserInput(string input, out int row, out int col)

@@ -34,6 +34,11 @@ namespace Console_Othello
             return true;
         }
 
+        public IPlayer GetPlayerById(PlayerID id)
+        {
+            return Players.FirstOrDefault(x => x.ID == id);
+        }
+
 
         public int Count { get; private set; } = 0;
 
@@ -83,6 +88,28 @@ namespace Console_Othello
         internal void DecreaseLife(PlayerID id)
         {
             PlayerLifeList[id]--;
+        }
+
+        public bool IsFinish()
+        {
+            //置くところがない
+            return !Board.SelectMany(x => x).Any(x => x == PlayerID.None);
+        }
+
+        public Dictionary<PlayerID, int> GetScore()
+        {
+            var score = new Dictionary<PlayerID, int>();
+            foreach (var id in Enum.GetValues(typeof(PlayerID)).Cast<PlayerID>().ToList())
+            {
+                score.Add(id, 0);
+            }
+
+            foreach (var g in Board.SelectMany(x => x).GroupBy(x => x))
+            {
+                score[g.Key] = g.Count();
+            }
+
+            return score;
         }
 
         public void SetPlayerOrder(int startIndex)
