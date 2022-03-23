@@ -24,3 +24,31 @@ gameManager.Players.Add(new Random_CPU("サトウ"));
 
 # 実行画面
 https://user-images.githubusercontent.com/43431002/159196918-426567a2-35dd-4bd5-a3f9-9d95c24aeba9.mp4
+
+# IPlayer.Placeメソッドの入力と出力
+
+## 入力
+`Place`メソッドが受け取るパラメータは`List<List<PlayerID>>`型の`board`です。
+  
+これはデフォルトでは盤面を表す`10x10`のリストです。
+  各セルの状態はPlayerID列挙型の値で表され、以下の5つの値のいずれかで埋められています。
+  
+  ```
+  Player1 : Player1の石が置かれている
+  Player2 : Player2の石が置かれている
+  Player3 : Player3の石が置かれている
+  Player4 : Player4の石が置かれている
+  None : 何も置かれていない。
+  ```
+  
+  自分が何Playerなのかは、gamaManagerによってIPlayer.IDプロパティにセットされているので、これを参照して自分と他のプレイヤーを区別してください。
+  
+  
+  ## 出力
+ `Place`メソッドは石を置く位置を表す`(int row, int column)`のタプルを返すようにします。
+  盤面のデータを元に自分が次に石を置く位置が決まったら、それを例えば`(1,3)`のように返します。
+  
+  
+  
+ 
+  
